@@ -1,6 +1,9 @@
 // backend/routes/index.js
 const express = require("express");
 const router = express.Router();
+//connect backend/routes/api/index.js
+const apiRouter = require("./api");
+router.use("/api", apiRouter);
 
 //this is a test route. should display Hello World!
 // router.get("/hello/world", function (req, res) {
