@@ -3,7 +3,6 @@ const { validationResult } = require("express-validator");
 // middleware for formatting errors from express-validator middleware
 // (to customize, see express-validator's documentation)
 const handleValidationErrors = (req, _res, next) => {
-  //_res means parameter is intentionally unused in the function
   const validationErrors = validationResult(req);
 
   if (!validationErrors.isEmpty()) {
