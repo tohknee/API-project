@@ -13,6 +13,12 @@ const router = express.Router();
 //create a middleware that will check username,email,password keys and validate them
 //if any checks fail an error will be returned as the response
 const validateSignup = [
+  check("firstName")
+    .exists({ checkFalsy: true })
+    .withMessage("Provide first name"),
+  check("lastName")
+    .exists({ checkFalsy: true })
+    .withMessage("Provide last name"),
   check("email")
     .exists({ checkFalsy: true })
     .isEmail()
@@ -31,12 +37,21 @@ const validateSignup = [
 // Sign up
 router.post("/", validateSignup, async (req, res) => {
   //add validateSignup callback to existing signup post
-  const { email, password, username } = req.body;
+  const { firstName, lastName, email, password, username } = req.body; //pass in firstname,lastname
   const hashedPassword = bcrypt.hashSync(password);
-  const user = await User.create({ email, username, hashedPassword });
+  const user = await User.create({
+    firstName,
+    lastName,
+    email,
+    username,
+    hashedPassword,
+  }); //create with these attributes
 
+  //define object safeUser
   const safeUser = {
     id: user.id,
+    firstName: firstName,
+    lastName: lastName,
     email: user.email,
     username: user.username,
   };
