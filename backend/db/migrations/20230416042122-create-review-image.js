@@ -13,18 +13,21 @@ module.exports = {
         type: Sequelize.INTEGER,
         references: {
           model: "Reviews",
+          key: "id",
         },
       },
-      uurl: {
+      url: {
         type: Sequelize.STRING,
       },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
     });
   },
