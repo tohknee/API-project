@@ -10,6 +10,17 @@ const { handleValidationErrors } = require("../../utils/validation");
 
 const router = express.Router();
 
+router.get("/current", async (req, res) => {
+  const userId = req.user.id;
+  const spots = await Spot.findAll({
+    where: {
+      ownerId: userId,
+    },
+  });
+
+  return res.json(spots);
+});
+
 router.get("/", async (req, res) => {
   const spots = await Spot.findAll();
 
