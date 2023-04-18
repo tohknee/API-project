@@ -2,7 +2,7 @@ const router = require("express").Router();
 //connect session and users routers
 const sessionRouter = require("./session.js");
 const usersRouter = require("./users.js");
-// // GET /api/restore-user test router
+
 const { restoreUser } = require("../../utils/auth.js");
 
 // //test api router. to test past fetch request into console and replace value of XSRF TOKEN
@@ -26,8 +26,8 @@ router.use(restoreUser); //restoreUsers middleware connection
 // If current user session is not valid, set req.user to null
 
 router.use("/session", sessionRouter);
-
 router.use("/users", usersRouter);
+router.use("/spots", spotsRouter);
 
 router.post("/test", (req, res) => {
   res.json({ requestBody: req.body });
