@@ -2,7 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 
 const { setTokenCookie, requireAuth } = require("../../utils/auth");
-const { Spot, SpotImage } = require("../../db/models");
+const { Spot, SpotImage, User } = require("../../db/models");
 
 //importcheck function and handleValidationError function
 const { check } = require("express-validator");
@@ -22,6 +22,10 @@ router.get("/current", async (req, res) => {
 
 router.get("/:spotId", async (req, res) => {
   const spotId = req.params.spotId;
+  const spot = await Spot.findByPk(req.params.spotId);
+  if (!spot) {
+    return res.status(404).json({ message: "Spot couldn't be found" });
+  }
   const spots = await Spot.findAll({
     where: {
       id: spotId,
@@ -29,6 +33,9 @@ router.get("/:spotId", async (req, res) => {
     include: [
       {
         model: SpotImage,
+      },
+      {
+        model: User,
       },
     ],
   });
