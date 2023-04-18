@@ -2,7 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 
 const { setTokenCookie, requireAuth } = require("../../utils/auth");
-const { Spot } = require("../../db/models");
+const { Spot, SpotImage } = require("../../db/models");
 
 //importcheck function and handleValidationError function
 const { check } = require("express-validator");
@@ -59,6 +59,24 @@ const validatePost = [
   check("price").notEmpty().withMessage("Provide price"),
   handleValidationErrors,
 ];
+
+router.post("/:spotId/images", async (req, res) => {
+  const { url, preview } = req.body;
+  const spotId = await Spot.findByPk(req.params.spotId);
+  if (!spotId) {
+    return res.status(404).json({ message: "Spot couldn't be found" });
+  }
+
+  const newImage = await SpotImage.create({
+    url,
+    preview,
+  });
+  return res.json({
+    id: newImage.id,
+    url: newImage.url,
+    preview: newImage.preview,
+  });
+});
 
 router.post("/", validatePost, async (req, res) => {
   const { address, city, state, country, lat, lng, name, description, price } =
