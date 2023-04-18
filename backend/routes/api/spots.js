@@ -17,7 +17,16 @@ router.get("/current", async (req, res) => {
       ownerId: userId,
     },
   });
+  return res.json(spots);
+});
 
+router.get("/:spotId", async (req, res) => {
+  const spotId = req.params.spotId;
+  const spots = await Spot.findAll({
+    where: {
+      id: spotId,
+    },
+  });
   return res.json(spots);
 });
 
