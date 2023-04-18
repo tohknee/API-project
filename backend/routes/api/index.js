@@ -2,7 +2,7 @@ const router = require("express").Router();
 //connect session and users routers
 const sessionRouter = require("./session.js");
 const usersRouter = require("./users.js");
-
+const spotsRouter = require("./spots.js");
 const { restoreUser } = require("../../utils/auth.js");
 
 // //test api router. to test past fetch request into console and replace value of XSRF TOKEN
