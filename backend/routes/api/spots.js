@@ -26,6 +26,11 @@ router.get("/:spotId", async (req, res) => {
     where: {
       id: spotId,
     },
+    include: [
+      {
+        model: SpotImage,
+      },
+    ],
   });
   return res.json(spots);
 });
