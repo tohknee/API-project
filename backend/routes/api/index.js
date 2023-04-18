@@ -2,15 +2,13 @@ const router = require("express").Router();
 //connect session and users routers
 const sessionRouter = require("./session.js");
 const usersRouter = require("./users.js");
+// // GET /api/restore-user test router
 const { restoreUser } = require("../../utils/auth.js");
 
 // //test api router. to test past fetch request into console and replace value of XSRF TOKEN
 router.post("/test", function (req, res) {
   res.json({ requestBody: req.body });
 });
-
-// // GET /api/restore-user test router
-const { restoreUser } = require("../../utils/auth.js");
 
 // router.get("/restore-user", (req, res) => {
 //   return res.json(req.user);

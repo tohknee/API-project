@@ -6,10 +6,10 @@ const apiRouter = require("./api");
 router.use("/api", apiRouter);
 
 //this is a test route. should display Hello World!
-// router.get("/hello/world", function (req, res) {
-//   res.cookie("XSRF-TOKEN", req.csrfToken()); //setting cookie on the response with name of XSRF-token and value of req.csrfToken methods return
-//   res.send("Hello World!"); //send Hello World! as res body
-// });
+router.get("/hello/world", function (req, res) {
+  res.cookie("XSRF-TOKEN", req.csrfToken()); //setting cookie on the response with name of XSRF-token and value of req.csrfToken methods return
+  res.send("Hello World!"); //send Hello World! as res body
+});
 
 // Add a XSRF-TOKEN cookie
 router.get("/api/csrf/restore", (req, res) => {
