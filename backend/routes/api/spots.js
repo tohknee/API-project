@@ -16,4 +16,46 @@ router.get("/", async (req, res) => {
   return res.json(spots);
 });
 
+const validatePost = [
+  check("address").exists({ checkFalsy: true }).withMessage("Provide address"),
+  check("city").exists({ checkFalsy: true }).withMessage("Provide city"),
+  check("state").exists({ checkFalsy: true }).withMessage("Provide state"),
+  check("country").exists({ checkFalsy: true }).withMessage("Provide country"),
+  check("lat")
+    .exists({ checkFalsy: true })
+    .isDecimal()
+    .withMessage("Latitude is not valid"),
+  check("lng")
+    .exists({ checkFalsy: true })
+    .isDecimal()
+    .withMessage("Longitude is not valid"),
+  check("name")
+    .exists({ checkFalsy: true })
+    .isLength({ max: 50 })
+    .withMessage("Provide name"),
+  check("description")
+    .exists({ checkFalsy: true })
+    .withMessage("Provide description"),
+  check("price").notEmpty().withMessage("Provide price"),
+  handleValidationErrors,
+];
+
+router.post("/", validatePost, async (req, res) => {
+  const { address, city, state, country, lat, lng, name, description, price } =
+    req.body;
+  const newSpot = await Spot.create({
+    address,
+    city,
+    state,
+    country,
+    lat,
+    lng,
+    name,
+    description,
+    price,
+  });
+
+  return res.json(newSpot);
+});
+
 module.exports = router;
