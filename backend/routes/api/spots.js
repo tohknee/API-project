@@ -96,4 +96,27 @@ router.post("/", validatePost, async (req, res) => {
   return res.json(newSpot);
 });
 
+router.put("/:spotId", validatePost, async (req, res) => {
+  const { address, city, state, country, lat, lng, name, description, price } =
+    req.body;
+  const spotId = await Spot.findByPk(req.params.spotId);
+  if (!spotId) {
+    return res.status(404).json({ message: "Spot couldn't be found" });
+  }
+
+  const Spot = await Spot.create({
+    address,
+    city,
+    state,
+    country,
+    lat,
+    lng,
+    name,
+    description,
+    price,
+  });
+
+  return res.json(newSpot);
+});
+
 module.exports = router;
