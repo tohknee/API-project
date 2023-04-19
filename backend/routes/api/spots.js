@@ -7,6 +7,7 @@ const { Spot, SpotImage, User } = require("../../db/models");
 //importcheck function and handleValidationError function
 const { check } = require("express-validator");
 const { handleValidationErrors } = require("../../utils/validation");
+const spotimage = require("../../db/models/spotimage");
 
 const router = express.Router();
 
@@ -93,35 +94,8 @@ router.post("/:spotId/images", async (req, res) => {
 router.post("/", validatePost, async (req, res) => {
   const { address, city, state, country, lat, lng, name, description, price } =
     req.body;
-  try {
-    const newSpot = await Spot.create({
-      address,
-      city,
-      state,
-      country,
-      lat,
-      lng,
-      name,
-      description,
-      price,
-    });
 
-    return res.json(newSpot);
-  } catch (e) {
-    console.log(e);
-    return e.errors;
-  }
-});
-
-router.put("/:spotId", validatePost, async (req, res) => {
-  const { address, city, state, country, lat, lng, name, description, price } =
-    req.body;
-  const spot = await Spot.findByPk(req.params.spotId);
-  if (!spot) {
-    return res.status(404).json({ message: "Spot couldn't be found" });
-  }
-
-  const Spot = await Spot.create({
+  const newSpot = await Spot.create({
     address,
     city,
     state,
@@ -134,6 +108,28 @@ router.put("/:spotId", validatePost, async (req, res) => {
   });
 
   return res.json(newSpot);
+});
+
+router.put("/:spotId", validatePost, async (req, res) => {
+  const { address, city, state, country, lat, lng, name, description, price } =
+    req.body;
+  const spot = await Spot.findByPk(req.params.spotId);
+  if (!spot) {
+    return res.status(404).json({ message: "Spot couldn't be found" });
+  }
+
+  (spot.address = address),
+    (spot.city = city),
+    (spot.state = state),
+    (spot.country = country),
+    (spot.lat = lat),
+    (spot.lng = lng),
+    (spot.name = name),
+    (spot.description = description),
+    (spot.price = price),
+    await spot.save();
+
+  return res.json(spot);
 });
 
 router.delete("/:spotId", async (req, res) => {
