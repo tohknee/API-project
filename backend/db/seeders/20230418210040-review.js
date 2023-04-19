@@ -25,6 +25,12 @@ module.exports = {
         review: "good spot",
         stars: 4,
       },
+      {
+        userId: 2,
+        spotId: 2,
+        review: "not good spot",
+        stars: 2,
+      },
     ]);
   },
 

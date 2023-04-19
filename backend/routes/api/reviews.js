@@ -47,10 +47,28 @@ router.get("/current", requireAuth, async (req, res) => {
           "price",
           //   "previewImage",
         ],
+        include: {
+          model: SpotImage,
+          // as: "previewImage",
+          attributes: ["url"],
+          where: { preview: true },
+        },
       },
       { model: ReviewImage, attributes: ["id", "url"] },
     ],
   });
+  let list = [];
+  reviews.forEach((review) => {
+    list.push(review.toJSON());
+  });
+  list.forEach((review) => {
+    review.Spot.SpotImages.forEach((image) => {
+      if (image.preview === true) {
+        review.Spot.previewImage = image.url;
+      }
+    });
+  });
+  list.forEach((review) => delete review.Spot.SpotImages);
   return res.json({ Reviews: reviews });
 });
 
