@@ -22,7 +22,7 @@ router.get("/current", async (req, res) => {
 
 router.get("/:spotId", async (req, res) => {
   const spotId = req.params.spotId;
-  const spot = await Spot.findByPk(req.params.spotId);
+  const spot = await Spot.findByPk(spotId);
   if (!spot) {
     return res.status(404).json({ message: "Spot couldn't be found" });
   }
@@ -93,26 +93,31 @@ router.post("/:spotId/images", async (req, res) => {
 router.post("/", validatePost, async (req, res) => {
   const { address, city, state, country, lat, lng, name, description, price } =
     req.body;
-  const newSpot = await Spot.create({
-    address,
-    city,
-    state,
-    country,
-    lat,
-    lng,
-    name,
-    description,
-    price,
-  });
+  try {
+    const newSpot = await Spot.create({
+      address,
+      city,
+      state,
+      country,
+      lat,
+      lng,
+      name,
+      description,
+      price,
+    });
 
-  return res.json(newSpot);
+    return res.json(newSpot);
+  } catch (e) {
+    console.log(e);
+    return e.errors;
+  }
 });
 
 router.put("/:spotId", validatePost, async (req, res) => {
   const { address, city, state, country, lat, lng, name, description, price } =
     req.body;
-  const spotId = await Spot.findByPk(req.params.spotId);
-  if (!spotId) {
+  const spot = await Spot.findByPk(req.params.spotId);
+  if (!spot) {
     return res.status(404).json({ message: "Spot couldn't be found" });
   }
 
@@ -129,6 +134,16 @@ router.put("/:spotId", validatePost, async (req, res) => {
   });
 
   return res.json(newSpot);
+});
+
+router.delete("/:spotId", async (req, res) => {
+  const spot = await Spot.findByPk(req.params.spotId);
+  if (!spot) {
+    return res.status(404).json({ message: "Spot couldn't be found" });
+  }
+
+  await spot.destroy();
+  return res.json({ message: "Successfully deleted" });
 });
 
 module.exports = router;

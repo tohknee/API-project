@@ -14,8 +14,8 @@ const handleValidationErrors = (req, _res, next) => {
     const err = Error("Bad request.");
     err.errors = errors;
     err.status = 400;
-    err.title = //"Bad request.";
-      err.stack = undefined; //this will remove the stack response from the body
+    // err.title = //"Bad request.";
+    err.stack = undefined; //this will remove the stack response from the body
     next(err);
   }
   next();
