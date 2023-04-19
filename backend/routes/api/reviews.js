@@ -8,6 +8,7 @@ const {
   User,
   Review,
   ReviewImage,
+  Booking,
 } = require("../../db/models");
 
 //importcheck function and handleValidationError function

@@ -17,8 +17,36 @@ router.get("/current", requireAuth, async (req, res) => {
     where: {
       ownerId: userId,
     },
+    include: [{ model: SpotImage }],
   });
-  return res.json({ Spots: spots });
+
+  let spotsList = [];
+  spots.forEach((spot) => {
+    spotsList.push(spot.toJSON());
+  });
+  spotsList.forEach((spot) => {
+    spot.SpotImages.forEach((image) => {
+      if (image.preview === true) {
+        spot.previewImage = image.url;
+      }
+    });
+  });
+  spotsList.forEach((spot) => delete spot.SpotImages);
+  return res.json({ Spots: spotsList });
+});
+
+router.get("/:spotId/reviews", async (req, res) => {
+  const spotId = req.params.spotId;
+  const spot = await Spot.findByPk(spotId);
+  if (!spot) {
+    return res.status(404).json({ message: "Spot couldn't be found" });
+  }
+  const reviews = await Review.findAll({
+    where: {
+      spotId: spotId,
+    },
+  });
+  return res.json(reviews); //{ Reviews: reviews }
 });
 
 router.get("/:spotId", async (req, res) => {
@@ -73,6 +101,14 @@ const validatePost = [
   check("price").notEmpty().withMessage("Provide price"),
   handleValidationErrors,
 ];
+
+router.post("./:spotId/reviews", requireAuth, async (req, res) => {
+  const { review, stars } = req.body;
+  const spotId = await Spot.findByPk(req.params.spotId);
+  if (!spotId) {
+    return res.status(404).json({ message: "Spot couldn't be found" });
+  }
+});
 
 router.post("/:spotId/images", requireAuth, async (req, res) => {
   const { url, preview } = req.body;

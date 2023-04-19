@@ -24,3 +24,9 @@ router.get("/current", async (req, res) => {
   });
   return res.json(bookings);
 });
+
+//crete booking from a spot based on spot id
+// router.post('/:spotId/bookings', requireAuth, async (req, res) => {
+//   const spotId= req.params.spotId;
+
+// })
