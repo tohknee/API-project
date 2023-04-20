@@ -27,18 +27,6 @@ router.get("/current", requireAuth, async (req, res) => {
     include: [{ model: SpotImage }],
   });
 
-  let spotsList = [];
-  spots.forEach((spot) => {
-    spotsList.push(spot.toJSON());
-  });
-  spotsList.forEach((spot) => {
-    spot.SpotImages.forEach((image) => {
-      if (image.preview === true) {
-        spot.previewImage = image.url;
-      }
-    });
-  });
-  spotsList.forEach((spot) => delete spot.SpotImages);
   return res.json({ Spots: spotsList });
 });
 
@@ -115,14 +103,59 @@ router.get("/:spotId", async (req, res) => {
       },
     ],
   });
-  return res.json(spots);
+  let spotsList = [];
+  spots.forEach((spot) => {
+    spotsList.push(spot.toJSON());
+  });
+  spotsList.forEach((spot) => {
+    let star = 0;
+    let counter = 0;
+    spot.Reviews.forEach((review) => {
+      star += review.stars;
+      counter++;
+    });
+    spot.average = star / counter;
+
+    spot.SpotImages.forEach((image) => {
+      if (image.preview === true) {
+        spot.previewImage = image.url;
+      }
+    });
+  });
+  spotsList.forEach((spot) => delete spot.SpotImages);
+  spotsList.forEach((spot) => delete spot.Reviews);
+  return res.json({ Spot: spotsList });
 });
 
 router.get("/", async (req, res) => {
   const reviewCount = await Review.findAll();
-  const spots = await Spot.findAll();
+  const spots = await Spot.findAll({
+    include: [{ model: SpotImage }, { model: Review }],
+  });
 
-  return res.json(spots);
+  let spotsList = [];
+  spots.forEach((spot) => {
+    spotsList.push(spot.toJSON());
+  });
+  spotsList.forEach((spot) => {
+    let star = 0;
+    let counter = 0;
+    spot.Reviews.forEach((review) => {
+      star += review.stars;
+      counter++;
+    });
+    spot.average = star / counter;
+
+    spot.SpotImages.forEach((image) => {
+      if (image.preview === true) {
+        spot.previewImage = image.url;
+      }
+    });
+  });
+
+  spotsList.forEach((spot) => delete spot.SpotImages);
+  spotsList.forEach((spot) => delete spot.Reviews);
+  return res.json({ Spots: spotsList });
 });
 
 const validatePost = [
@@ -161,6 +194,7 @@ const validateReview = [
   handleValidationErrors,
 ];
 
+//need to check if date is already booked
 router.post("/:spotId/bookings", requireAuth, async (req, res) => {
   const spotId = req.params.spotId;
   const spot = await Spot.findByPk(spotId);
@@ -255,7 +289,7 @@ router.put("/:spotId", requireAuth, validatePost, async (req, res) => {
     req.body;
   const spot = await Spot.findByPk(req.params.spotId);
 
-  if (req.user.id !== Spot.ownerId) {
+  if (req.user.id !== Booking.userId) {
     return res
       .status(404)
       .json({ message: "Spot must belong to the current user" });
