@@ -2,7 +2,13 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 
 const { setTokenCookie, requireAuth } = require("../../utils/auth");
-const { Spot, SpotImage, User, Review } = require("../../db/models");
+const {
+  Spot,
+  SpotImage,
+  User,
+  Review,
+  ReviewImage,
+} = require("../../db/models");
 
 //importcheck function and handleValidationError function
 const { check } = require("express-validator");
@@ -45,7 +51,18 @@ router.get("/:spotId/reviews", async (req, res) => {
     where: {
       spotId: spotId,
     },
+    include: [
+      {
+        model: User,
+        attributes: ["id", "firstName", "lastName"],
+      },
+      {
+        model: ReviewImage,
+        attributes: ["id", "url"],
+      },
+    ],
   });
+
   return res.json(reviews); //{ Reviews: reviews }
 });
 
@@ -102,13 +119,49 @@ const validatePost = [
   handleValidationErrors,
 ];
 
-router.post("./:spotId/reviews", requireAuth, async (req, res) => {
-  const { review, stars } = req.body;
-  const spotId = await Spot.findByPk(req.params.spotId);
-  if (!spotId) {
-    return res.status(404).json({ message: "Spot couldn't be found" });
+const validateReview = [
+  check("review")
+    .exists({ checkFalsy: true })
+    .withMessage("Review text is required"),
+  check("stars")
+    .exists({ checkFalsy: true })
+    .isNumeric({ checkFalsy: true })
+    .isInt({ min: 1, max: 5 })
+    .withMessage("Stars must be an integer from 1 to 5"),
+  handleValidationErrors,
+];
+
+router.post(
+  "/:spotId/reviews",
+  requireAuth,
+  validateReview,
+  async (req, res) => {
+    const { review, stars } = req.body;
+    const spotId = await Spot.findByPk(req.params.spotId);
+
+    const aReviewExists = await Review.findOne({
+      where: {
+        spotId: spotId.id,
+        userId: req.user.id,
+      },
+    });
+    if (!spotId) {
+      return res.status(404).json({ message: "Spot couldn't be found" });
+    }
+    if (aReviewExists) {
+      return res
+        .status(500)
+        .json({ message: "User already has a review for this spot" });
+    }
+    const newReview = await Review.create({
+      userId: req.user.id,
+      spotId: spotId.id,
+      review,
+      stars,
+    });
+    return res.json(newReview);
   }
-});
+);
 
 router.post("/:spotId/images", requireAuth, async (req, res) => {
   const { url, preview } = req.body;
