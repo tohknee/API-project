@@ -161,6 +161,25 @@ const validateReview = [
   handleValidationErrors,
 ];
 
+router.post("/:spotId/bookings", requireAuth, async (req, res) => {
+  const spotId = req.params.spotId;
+  const spot = await Spot.findByPk(spotId);
+  const userId = req.user.id;
+  const { startDate, endDate } = req.body;
+
+  if (!spot) {
+    return res.status(404).json({ message: "Spot couldn't be found" });
+  }
+
+  const booking = await Booking.create({
+    spotId: spotId,
+    userId: userId,
+    startDate: startDate,
+    endDate: endDate,
+  });
+  return res.json(booking);
+});
+
 router.post(
   "/:spotId/reviews",
   requireAuth,
