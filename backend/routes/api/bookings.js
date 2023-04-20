@@ -10,11 +10,11 @@ const { handleValidationErrors } = require("../../utils/validation");
 
 const router = express.Router();
 
-router.get("/current", async (req, res) => {
-  const userId = req.user.userId;
+router.get("/current", requireAuth, async (req, res) => {
+  const userId = req.user.id;
   const bookings = await Booking.findAll({
     where: {
-      ownerId: userId,
+      userId: userId,
     },
     include: [
       {
@@ -25,8 +25,12 @@ router.get("/current", async (req, res) => {
   return res.json(bookings);
 });
 
+router.get;
+
 //crete booking from a spot based on spot id
 // router.post('/:spotId/bookings', requireAuth, async (req, res) => {
 //   const spotId= req.params.spotId;
 
 // })
+
+module.exports = router;

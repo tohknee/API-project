@@ -8,6 +8,7 @@ const {
   User,
   Review,
   ReviewImage,
+  Booking,
 } = require("../../db/models");
 
 //importcheck function and handleValidationError function
@@ -39,6 +40,35 @@ router.get("/current", requireAuth, async (req, res) => {
   });
   spotsList.forEach((spot) => delete spot.SpotImages);
   return res.json({ Spots: spotsList });
+});
+
+router.get("/:spotId/bookings", requireAuth, async (req, res) => {
+  const spotId = req.params.spotId;
+  const spot = await Spot.findByPk(spotId);
+
+  if (!spot) {
+    return res.status(404).json({ message: "Spot couldn't be found" });
+  }
+
+  if (spot.ownerId !== req.user.id) {
+    const bookingUser = await Booking.findAll({
+      where: { spotId: spot.id },
+      attributes: ["spotId", "startDate", "endDate"],
+    });
+    return res.json({ Bookings: bookingUser });
+  }
+
+  const bookingOwner = await Booking.findAll({
+    where: {
+      spotId: spot.id,
+    },
+    include: {
+      model: User,
+      attributes: ["id", "firstName", "lastName"],
+    },
+  });
+  console.log(bookingOwner);
+  return res.json({ Booking: bookingOwner });
 });
 
 router.get("/:spotId/reviews", async (req, res) => {
