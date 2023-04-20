@@ -72,4 +72,78 @@ router.get("/current", requireAuth, async (req, res) => {
   return res.json({ Reviews: reviews });
 });
 
+router.post("/:reviewId/images", requireAuth, async (req, res) => {
+  const { url } = req.body;
+  const review = await Review.findByPk(req.params.reviewId);
+  const userId = req.user.id;
+  const reviewOwnerId = review.userId;
+  const findReviewWithUser = await Review.findOne({ where: { userId } });
+  const existingReview = await Review.findByPk(req.params.reviewId);
+  console.log(findReviewWithUser);
+  // finish the validation that current user id matches review owner id
+  if (userId !== existingReview.userId) {
+    return res.status(403).json({ message: " forbbidden. not  fix this" });
+  }
+  const imageCount = await ReviewImage.findAll({
+    where: { reviewId: req.params.reviewId },
+  });
+
+  const reviews = await Review.findOne({
+    where: { id: review.id },
+  });
+
+  if (!existingReview) {
+    return res.status(404).json({ message: "Review couldn't be found" });
+  }
+
+  if (imageCount.length >= 10) {
+    return res.status(403).json({
+      message: "Maximum number of images for this resource was reached",
+    });
+  }
+
+  const newReviewImage = await ReviewImage.create(
+    {
+      url,
+      reviewId: req.params.reviewId,
+    },
+    {
+      attributes: ["id", "url"],
+    }
+  );
+  return res.json(newReviewImage);
+});
+
+const validateReview = [
+  check("review")
+    .exists({ checkFalsy: true })
+    .withMessage("Review text is required"),
+  check("stars")
+    .exists({ checkFalsy: true })
+    .isNumeric({ checkFalsy: true })
+    .isInt({ min: 1, max: 5 })
+    .withMessage("Stars must be an integer from 1 to 5"),
+  handleValidationErrors,
+];
+
+router.put("/:reviewId", requireAuth, validateReview, async (req, res) => {
+  const { review, stars } = req.body;
+
+  const reviewToEdit = await Review.findByPk(req.params.reviewId);
+
+  if (!reviewToEdit) {
+    return res.status(404).json({ message: "Review not found" });
+  }
+
+  if (reviewToEdit.userId !== req.user.id) {
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  (reviewToEdit.review = review),
+    (reviewToEdit.stars = stars),
+    await reviewToEdit.save();
+
+  return res.json(reviewToEdit);
+});
+
 module.exports = router;

@@ -154,7 +154,7 @@ router.post(
         .json({ message: "User already has a review for this spot" });
     }
     const newReview = await Review.create({
-      userId: req.user.id,
+      userId: req.uiser.d,
       spotId: spotId.id,
       review,
       stars,
