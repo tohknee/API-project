@@ -26,7 +26,6 @@ router.get("/current", requireAuth, async (req, res) => {
   return res.json({ Bookings: bookings });
 });
 
-//error booking must belong to current current user. need the if date is booked cannot be booked
 router.put("/:bookingId", requireAuth, async (req, res) => {
   const { startDate, endDate } = req.body;
 
@@ -40,15 +39,51 @@ router.put("/:bookingId", requireAuth, async (req, res) => {
     return res.status(403).json({ message: "Forbidden" });
   }
 
-  // if (new Date(endDate) < new Date(startDate)) {
-  //   return res.status(400).json({
-  //     message: "Bad request",
-  //     errors: { endDate: "endDate cannot come before startDate" },
-  //   });
-  // }
-
   if (new Date() > new Date(booking.endDate)) {
     return res.status(403).json({ message: "Past bookings can't be modified" });
+  }
+  const list = await Booking.findAll({ where: { spotId: booking.spotId } });
+  let hasConflict = false;
+
+  const newStartDate = new Date(startDate);
+  const newEndDate = new Date(endDate);
+
+  if (new Date(booking.startDate).getTime() < new Date().getTime()) {
+    hasConflict = true;
+    return res
+      .status(403)
+      .json({ message: "Past bookings can't be modified " });
+  }
+
+  list.forEach((booking) => {
+    const startDateTaken = new Date(booking.startDate);
+    const endDateTaken = new Date(booking.endDate);
+
+    if (newStartDate.getTime() > newEndDate.getTime()) {
+      hasConflict = true;
+      return res.status(400).json({
+        message: "Bad Request ",
+        errors: { endDate: "endDate cannot be on or before startDate" },
+      });
+    }
+
+    if (
+      (newStartDate >= startDateTaken && newStartDate < endDateTaken) ||
+      (newEndDate > startDateTaken && newEndDate <= endDateTaken) ||
+      (newStartDate <= startDateTaken && newEndDate >= endDateTaken)
+    ) {
+      hasConflict = true;
+      return res.status(403).json({
+        message: "Sorry, this spot is already booked for the specified dates",
+        errors: {
+          startDate: "Start date conflicts with an existing booking",
+          endDate: "End date conflicts with an existing booking",
+        },
+      });
+    }
+  });
+  if (hasConflict) {
+    return;
   }
 
   booking.startDate = startDate;
