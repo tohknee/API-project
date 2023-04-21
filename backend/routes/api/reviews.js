@@ -80,10 +80,6 @@ router.post("/:reviewId/images", requireAuth, async (req, res) => {
     where: { reviewId: req.params.reviewId },
   });
 
-  // const reviews = await Review.findOne({
-  //   where: { id: review.id },
-  // });
-
   if (!existingReview) {
     return res.status(404).json({ message: "Review couldn't be found" });
   }
@@ -96,11 +92,10 @@ router.post("/:reviewId/images", requireAuth, async (req, res) => {
 
   const newReviewImage = await ReviewImage.create(
     {
-      url,
-      reviewId: req.params.reviewId, //not sure if i need review id here
+      url: url,
     },
     {
-      attributes: ["id", "url"],
+      attributes: { exclude: ["createdAt", "updatedAt"] }, //still not excluding these attributes
     }
   );
   return res.json(newReviewImage);

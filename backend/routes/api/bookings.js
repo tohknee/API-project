@@ -2,7 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 
 const { setTokenCookie, requireAuth } = require("../../utils/auth");
-const { Spot, User, Booking } = require("../../db/models");
+const { Spot, User, Booking, SpotImage } = require("../../db/models");
 
 //importcheck function and handleValidationError function
 const { check } = require("express-validator");
@@ -10,7 +10,6 @@ const { handleValidationErrors } = require("../../utils/validation");
 
 const router = express.Router();
 
-//i need preview image. and spot remove created/updated at
 router.get("/current", requireAuth, async (req, res) => {
   const userId = req.user.id;
   const bookings = await Booking.findAll({
@@ -20,10 +19,30 @@ router.get("/current", requireAuth, async (req, res) => {
     include: [
       {
         model: Spot,
+        include: {
+          model: SpotImage,
+        },
+        attributes: { exclude: ["description", "createdAt", "updatedAt"] },
       },
     ],
   });
-  return res.json({ Bookings: bookings });
+
+  const bookingsList = [];
+
+  bookings.forEach((booking) => {
+    bookingsList.push(booking.toJSON());
+  });
+
+  bookingsList.forEach((booking) => {
+    booking.Spot.SpotImages.forEach((image) => {
+      if (image.preview === true) {
+        booking.Spot.previewImage = image.url;
+      }
+    });
+  });
+
+  bookingsList.forEach((booking) => delete booking.Spot.SpotImages);
+  return res.json({ Bookings: bookingsList });
 });
 
 router.put("/:bookingId", requireAuth, async (req, res) => {
