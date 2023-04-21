@@ -19,7 +19,7 @@ router.delete("/:imageId", requireAuth, async (req, res) => {
   }
   if (image.Spot.userId !== req.user.id) {
     return res.status(403).json({
-      message: " Image must belong to the current user",
+      message: " Forbidden",
     });
   }
 
