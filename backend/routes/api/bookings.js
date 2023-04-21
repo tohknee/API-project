@@ -40,12 +40,12 @@ router.put("/:bookingId", requireAuth, async (req, res) => {
     return res.status(403).json({ message: "Forbidden" });
   }
 
-  if (new Date(endDate) < new Date(startDate)) {
-    return res.status(400).json({
-      message: "Bad request",
-      errors: { endDate: "endDate cannot come before startDate" },
-    });
-  }
+  // if (new Date(endDate) < new Date(startDate)) {
+  //   return res.status(400).json({
+  //     message: "Bad request",
+  //     errors: { endDate: "endDate cannot come before startDate" },
+  //   });
+  // }
 
   if (new Date() > new Date(booking.endDate)) {
     return res.status(403).json({ message: "Past bookings can't be modified" });
