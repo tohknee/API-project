@@ -18,13 +18,9 @@ const spotimage = require("../../db/models/spotimage");
 
 const router = express.Router();
 
+//need aliasing Spot Images to previewImage
 router.get("/current", requireAuth, async (req, res) => {
   const userId = req.user.id;
-  // if (userId !== userId.ownerId) {
-  //   return res
-  //     .status(403)
-  //     .json({ message: "Spot must belong to the current user" });
-  // }
 
   const reviews = await Review.findAll({
     where: {
@@ -45,13 +41,9 @@ router.get("/current", requireAuth, async (req, res) => {
           "lng",
           "name",
           "price",
-          //   "previewImage",
         ],
         include: {
           model: SpotImage,
-          // as: "previewImage",
-          attributes: ["url"],
-          where: { preview: true },
         },
       },
       { model: ReviewImage, attributes: ["id", "url"] },
@@ -69,28 +61,28 @@ router.get("/current", requireAuth, async (req, res) => {
     });
   });
   list.forEach((review) => delete review.Spot.SpotImages);
-  return res.json({ Reviews: reviews });
+  return res.json({ Reviews: list });
 });
 
 router.post("/:reviewId/images", requireAuth, async (req, res) => {
   const { url } = req.body;
   const review = await Review.findByPk(req.params.reviewId);
   const userId = req.user.id;
-  const reviewOwnerId = review.userId;
+
   const findReviewWithUser = await Review.findOne({ where: { userId } });
   const existingReview = await Review.findByPk(req.params.reviewId);
   console.log(findReviewWithUser);
-  // finish the validation that current user id matches review owner id
+
   if (userId !== existingReview.userId) {
-    return res.status(403).json({ message: " forbbidden. not  fix this" });
+    return res.status(403).json({ message: " forbidden" });
   }
   const imageCount = await ReviewImage.findAll({
     where: { reviewId: req.params.reviewId },
   });
 
-  const reviews = await Review.findOne({
-    where: { id: review.id },
-  });
+  // const reviews = await Review.findOne({
+  //   where: { id: review.id },
+  // });
 
   if (!existingReview) {
     return res.status(404).json({ message: "Review couldn't be found" });
@@ -105,7 +97,7 @@ router.post("/:reviewId/images", requireAuth, async (req, res) => {
   const newReviewImage = await ReviewImage.create(
     {
       url,
-      reviewId: req.params.reviewId,
+      reviewId: req.params.reviewId, //not sure if i need review id here
     },
     {
       attributes: ["id", "url"],
@@ -126,6 +118,8 @@ const validateReview = [
   handleValidationErrors,
 ];
 
+//is it ok that the forbidden error hits before the review not found
+
 router.put("/:reviewId", requireAuth, validateReview, async (req, res) => {
   const { review, stars } = req.body;
 
@@ -136,7 +130,7 @@ router.put("/:reviewId", requireAuth, validateReview, async (req, res) => {
   }
 
   if (reviewToEdit.userId !== req.user.id) {
-    return res.status(403).json({ message: "Unauthorized" });
+    return res.status(403).json({ message: "Forbidden" });
   }
 
   (reviewToEdit.review = review),
@@ -150,11 +144,11 @@ router.delete("/:reviewId", requireAuth, async (req, res) => {
   const reviewToDelete = await Review.findByPk(req.params.reviewId);
 
   if (!reviewToDelete) {
-    return res.status(404).json({ message: "Review not found" });
+    return res.status(404).json({ message: "Review couldn't be found" });
   }
 
   if (reviewToDelete.userId !== req.user.id) {
-    return res.status(403).json({ message: "Unauthorized" });
+    return res.status(403).json({ message: "Forbidden" });
   }
 
   await reviewToDelete.destroy();

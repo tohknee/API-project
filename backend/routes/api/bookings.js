@@ -10,6 +10,7 @@ const { handleValidationErrors } = require("../../utils/validation");
 
 const router = express.Router();
 
+//i need preview image. and spot remove created/updated at
 router.get("/current", requireAuth, async (req, res) => {
   const userId = req.user.id;
   const bookings = await Booking.findAll({
@@ -22,18 +23,23 @@ router.get("/current", requireAuth, async (req, res) => {
       },
     ],
   });
-  return res.json(bookings);
+  return res.json({ Bookings: bookings });
 });
 
-//error booking must belong to current current user
+//error booking must belong to current current user. need the if date is booked cannot be booked
 router.put("/:bookingId", requireAuth, async (req, res) => {
   const { startDate, endDate } = req.body;
 
   const bookingId = req.params.bookingId;
-  const booking = await Booking.findByPk(bookingId, { include: [Spot] });
+  const booking = await Booking.findByPk(bookingId);
   if (!booking) {
     return res.status(404).json({ message: "Booking couldn't be found" });
   }
+
+  if (booking.userId !== req.user.id) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
   if (new Date(endDate) < new Date(startDate)) {
     return res.status(400).json({
       message: "Bad request",
@@ -41,10 +47,8 @@ router.put("/:bookingId", requireAuth, async (req, res) => {
     });
   }
 
-  if (booking.Spot.userId !== req.user.id) {
-    return res
-      .status(401)
-      .json({ message: "Booking must belong to the current user" });
+  if (new Date() > new Date(booking.endDate)) {
+    return res.status(403).json({ message: "Past bookings can't be modified" });
   }
 
   booking.startDate = startDate;
@@ -66,8 +70,8 @@ router.delete("/:bookingId", requireAuth, async (req, res) => {
     });
   }
   if (booking.Spot.userId !== req.user.id && booking.userId !== req.user.id) {
-    return res.status(401).json({
-      message: "Booking must belong to the current user ",
+    return res.status(403).json({
+      message: "Forbidden ",
     });
   }
 
