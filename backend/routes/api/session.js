@@ -23,20 +23,6 @@ const validateLogin = [
   handleValidationErrors,
 ];
 
-router.get("/", validateLogin, async (req, res, next) => {
-  const { user } = req;
-  if (user) {
-    const safeUser = {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      username: user.username,
-    };
-    return res.json({ user: safeUser });
-  } else return res.json({ user: null });
-});
-
 // Log in
 router.post("/", validateLogin, async (req, res, next) => {
   //add validate login callback

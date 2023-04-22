@@ -150,6 +150,7 @@ router.get("/:spotId", async (req, res) => {
   const [innerSpots] = spotsList;
   return res.json(innerSpots);
 });
+
 const queryFilters = [
   check("page")
     .optional()
