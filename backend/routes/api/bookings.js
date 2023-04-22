@@ -2,7 +2,13 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 
 const { setTokenCookie, requireAuth } = require("../../utils/auth");
-const { Spot, User, Booking, SpotImage } = require("../../db/models");
+const {
+  Spot,
+  User,
+  Booking,
+  SpotImage,
+  ReviewImage,
+} = require("../../db/models");
 
 //importcheck function and handleValidationError function
 const { check } = require("express-validator");
