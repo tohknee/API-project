@@ -18,7 +18,7 @@ const spotimage = require("../../db/models/spotimage");
 
 const router = express.Router();
 
-//need aliasing Spot Images to previewImage
+//need aliasing Spot Images to previewImage, get the reviews because it is empty. cant read seed data
 router.get("/current", requireAuth, async (req, res) => {
   const userId = req.user.id;
 
