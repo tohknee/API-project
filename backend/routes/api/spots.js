@@ -336,6 +336,11 @@ router.post("/:spotId/bookings", requireAuth, async (req, res) => {
   if (req.user.id !== spot.ownerId) {
     return res.status(403).json({ message: "Forbidden" });
   }
+  if (req.user.id === spot.ownerId) {
+    return res
+      .status(403)
+      .json({ message: "Spot must NOT belong to the current user" });
+  }
 
   const allBookings = await Booking.findAll({ where: { spotId } });
   const bookings = allBookings.map((booking) => booking.toJSON());
@@ -466,12 +471,14 @@ router.put("/:spotId", requireAuth, validatePost, async (req, res) => {
     req.body;
   const spot = await Spot.findByPk(req.params.spotId);
 
-  if (req.user.id !== spot.ownerId) {
-    return res.status(403).json({ message: "Forbidden" });
-  }
   if (!spot) {
     return res.status(404).json({ message: "Spot couldn't be found" });
   }
+
+  if (req.user.id !== spot.ownerId) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+  console.log(spot);
 
   (spot.address = address),
     (spot.city = city),

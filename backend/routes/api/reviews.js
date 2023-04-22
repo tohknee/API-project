@@ -73,6 +73,9 @@ router.post("/:reviewId/images", requireAuth, async (req, res) => {
   const existingReview = await Review.findByPk(req.params.reviewId);
   console.log(findReviewWithUser);
 
+  if (!existingReview) {
+    return res.status(404).json({ message: "Review couldn't be found" });
+  }
   if (userId !== existingReview.userId) {
     return res.status(403).json({ message: " forbidden" });
   }
@@ -80,25 +83,20 @@ router.post("/:reviewId/images", requireAuth, async (req, res) => {
     where: { reviewId: req.params.reviewId },
   });
 
-  if (!existingReview) {
-    return res.status(404).json({ message: "Review couldn't be found" });
-  }
-
   if (imageCount.length >= 10) {
     return res.status(403).json({
       message: "Maximum number of images for this resource was reached",
     });
   }
 
-  const newReviewImage = await ReviewImage.create(
-    {
-      url: url,
-    },
-    {
-      attributes: { exclude: ["createdAt", "updatedAt"] }, //still not excluding these attributes
-    }
-  );
-  return res.json(newReviewImage);
+  const newReviewImage = await ReviewImage.create({
+    url: url,
+    reviewId: req.params.reviewId,
+  });
+  return res.json({
+    id: newReviewImage.id,
+    url: newReviewImage.url,
+  });
 });
 
 const validateReview = [
